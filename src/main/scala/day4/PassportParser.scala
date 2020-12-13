@@ -1,46 +1,58 @@
 package day4
 
-import scala.io.Source
-import java.io.File
-
-object PassportParser extends App {
-
+object PassportParser {
 
   type Passport = Map[String, String]
   val expectedFields = Set("byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid")
-  val filename = "./src/main/resources/input.txt"
+  val filename = "./src/main/resources/input_day_4.txt"
 
   val splitInputIntoPassports: String => List[String] = (s: String) => s.split("\n\n").toList
 
-  val parseStrings2Passports: List[String] => List[Passport] = (input: List[String]) => input
-    .map(p => p.split("\\s+")) // split by one or many whitespaces
-    .map(pass => pass
-      .map {
-        field =>
-          val fieldSplitted: Array[String] = field.split(":")
-          (fieldSplitted(0), fieldSplitted(1))
-      }
-      .toMap
-    )
+  val parseStrings2Passports: String => Passport = (input: String) => input
+    .split("\\s+") // split by one or many whitespaces
+    .map {
+      field =>
+        val fieldSplitted: Array[String] = field.split(":")
+        (fieldSplitted(0), fieldSplitted(1))
+    }
+    .toMap
 
-  val addValidationInfo: List[Passport] => List[(Passport, Boolean)] = (passports: List[Passport]) => passports.map(pass => (pass, expectedFields.subsetOf(pass.keySet)))
+  val validatePassport: Passport => Boolean = (passport: Passport) => expectedFields.subsetOf(passport.keySet)
+
+  val processEntry: String => Boolean = parseStrings2Passports andThen validatePassport
 
   val divideBetweenValidInvalid: List[(Passport, Boolean)] => (List[(Passport, Boolean)], List[(Passport, Boolean)]) = (step3: List[(Passport, Boolean)]) => step3.partition(_._2)
 
-  val (validPassports, invalidPassports) = withFileAsString(filename) {
-    splitInputIntoPassports andThen
-      parseStrings2Passports andThen
-      addValidationInfo andThen
-      divideBetweenValidInvalid
+  def sanityCheck(): Unit = {
+    // for inspection
+    val (validPassports, invalidPassports) = withFileAsString(filename) {
+      splitInputIntoPassports
+    }
+      .map(parseStrings2Passports)
+      .partition(validatePassport)
+
+    println("valid passports:")
+    validPassports.foreach(println)
+    println(">>>>>>>>>>>>>>>>>>>>>>>>>\n\n\ninvalid passports:")
+    invalidPassports.foreach(println)
+
+    println(s"valid passports count: ${validPassports.size}")
+    println(s"invalid passports count: ${invalidPassports.size}")
   }
 
-  println("valid passports:")
-  validPassports.foreach(pass => println(s"${pass}\n>>>>>>>>>>>>>>>>"))
-  println("invalid passports:")
-  invalidPassports.foreach(pass => println(s"${pass}\n>>>>>>>>>>>>>>>>"))
 
+  def main(args: Array[String]): Unit = {
 
-  println(s"valid passports count: ${validPassports.size}")
-  println(s"invalid passports count: ${invalidPassports.size}")
+    //    uncomment for verbose inspection of passport validation
+    //    sanityCheck()
+
+    // final solution
+    val result = withFileAsString(filename) {
+      splitInputIntoPassports
+    }
+      .count(processEntry)
+
+    println(s"count of valid passports: $result")
+  }
 
 }
