@@ -4,7 +4,6 @@ object PassportParser {
 
   type Passport = Map[String, String]
   val expectedFields = Set("byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid")
-  val filename = "./src/main/resources/input_day_4.txt"
 
   val splitInputIntoPassports: String => List[String] = (s: String) => s.split("\n\n").toList
 
@@ -12,7 +11,7 @@ object PassportParser {
     .split("\\s+") // split by one or many whitespaces
     .map {
       field =>
-        val fieldSplitted: Array[String] = field.split(":")
+        val fieldSplitted: Array[String] = field.split(fieldSeparator)
         (fieldSplitted(0), fieldSplitted(1))
     }
     .toMap
@@ -39,7 +38,6 @@ object PassportParser {
     println(s"valid passports count: ${validPassports.size}")
     println(s"invalid passports count: ${invalidPassports.size}")
   }
-
 
   def main(args: Array[String]): Unit = {
 

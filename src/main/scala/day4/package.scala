@@ -2,8 +2,8 @@ package object day4 {
 
   import java.io._
   import scala.io.Source
+  import com.typesafe.config._
 
-  val inputFile = new File("")
 
   def withFileAsString[A](filename: String)(fn: String => A): A = {
     val source = Source.fromFile(filename)
@@ -18,5 +18,12 @@ package object day4 {
       fn(source.getLines().toList)
     } finally source.close()
   }
+
+
+
+  val config: Config = ConfigFactory.load().resolve().getConfig("day4")
+
+  val filename: String = config.getString("filename")
+  val fieldSeparator: String = config.getString("field_separator")
 
 }
